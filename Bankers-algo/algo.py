@@ -1,53 +1,75 @@
 # Banker's algo is a Deadlock avoidance algo, also used for Deadlock detection in a system.
+# Safety algo checks if a process is safe to be executed.
 
 class OS:
 
-    def __init__(self, avail: int):
+    def __init__(self, available, allocated, max_need):
 
-        self.count = len(avail)
-        self.avail = avail
+        self.count_resources = len(available)
+        self.count_processes = len(allocated)
+        self.available = available
+        self.allocated = allocated
+        self.max_need = max_need
+        self.finished = [False for i in range(self.count_processes)]
+    
+    def safety_algo(self, pid):
 
-    @staticmethod
-    def can_be_executed(free, need):
-
-        for i in range(len(free)):
-            if need[i] > free[i]:
-                return False
+        for i in range(self.count_resources):
+            if self.max_need[pid][i] - self.allocated[pid][i] > self.available[i]:
+                return False    # process is not safe to execute now
             
-        return True
+        return True     # process is safe to execute now
+    
+    def release_resources(self, pid):
+        for i in range(self.count_resources):
+            self.available[i]+=self.allocated[pid][i]   #resources that were allocated got released
+            self.allocated[pid][i] = 0
+            self.max_need[pid][i] = 0
 
-    def bankers_algo(self, allocated, maxx_need):
+    def print_state(self, pid):
+        print('------------------------------------------------------------')
+        print(f'✔ Process # {pid} executed and resources freed')
+        print('Current Available Resources')
+        print(self.available)
+        print('Current Allocated Resources')
+        print(self.allocated)
+        print('Max Need of Processes')
+        print(self.max_need)
 
-        safe_order = []
-        processes = len(allocated)
-        executed = [False for i in range(processes)]
-        total_executed = 0
+    def bankers_algo(self):
 
-        while total_executed<processes:
+        sequence = []
 
-            change = False
+        while True:
 
-            for i in range(processes):
+            ran = False
+            for pid in range(self.count_processes):
+                if self.finished[pid] == False and self.safety_algo(pid):
+                    self.finished[pid] = True
+                    sequence.append(pid+1)
+                    self.release_resources(pid)
+                    ran = True
+                    self.print_state(pid+1)
 
-                if executed[i] == False:
+            if len(sequence) == self.count_processes:
+                return True, sequence
+            
+            if ran == False:
+                return False, sequence
 
-                    need = [maxx_need[i][j] - allocated[i][j] for j in range(self.count)]
+# available[NUMBER OF RESOURCES] => no of available resources of each type
+available = [3, 3, 2] 
 
-                    if self.can_be_executed(self.avail, need):
-                        self.avail[:] = [self.avail[j] + allocated[i][j] for j in range(self.count)]
-                        executed[i] = True
-                        safe_order.append(i)
-                        total_executed+=1
-                        change = True
+# max_need[NUMBER OF PROCESSES][NUMBER OF RESOURCES] => maximum need of each type of resource for each process
+max_need = [
+        [7, 5, 3],
+        [3, 2, 2],
+        [9, 0, 2],
+        [2, 2, 2],
+        [4, 3, 3]
+       ]
 
-            if change == False:
-                return False, []
-
-        return True, safe_order
-
-
-os = OS([3, 3, 2])
-
+# allocated[NUMBER OF PROCESSES][NUMBER OF RESOURCES] => number of resources of each type currently allocated to each process
 allocated = [
         [0, 1, 0],
         [2, 0, 0],
@@ -56,26 +78,27 @@ allocated = [
         [0, 0, 2]
         ]
 
-maxx_need = [
-        [7, 5, 3],
-        [3, 2, 2],
-        [9, 0, 2],
-        [2, 2, 2],
-        [4, 3, 3]
-       ]
+print('Current Available Resources')
+print(available)
+print('Current Allocated Resources')
+print(allocated)
+print('Max Need of Processes')
+print(max_need)
 
-is_safe, sequence = os.bankers_algo(allocated=allocated, maxx_need=maxx_need)
+os = OS(available = available, allocated = allocated, max_need = max_need)
+
+is_safe, sequence = os.bankers_algo()
+
+
+print('------------------------------------------------------------')
 
 if is_safe:
-    print('Sequence is safe.')
+    print('Safe sequence exists')
     seq = []
 
     for i in sequence:
         seq.append('P' + str(i))
 
-    print('Process order is: ' + " -> ".join(seq))
+    print('Process execution order is: ' + " -> ".join(seq))
 else:
-    print('Process is not safe. Deadlock exists.')
-    
-
-
+    print('Safe sequence does not exist. Deadlock may occur.')

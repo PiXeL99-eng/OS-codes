@@ -42,7 +42,7 @@ class OS:
 
         return arr
 
-os = OS(no_of_frames=3)
+os = OS(no_of_frames=4)
 
 pages = [7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1]
 
