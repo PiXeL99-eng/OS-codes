@@ -8,15 +8,13 @@
 
 from collections import deque
 
-def rr(processes):
+def rr(processes, quantum):
 
     q = deque()
     processes.sort()
     count_process = len(processes)
     output = []
     gantt_chart = [] # (pid, start, end)
-
-    quantum = 2
 
     time = 0
 
@@ -70,7 +68,8 @@ def rr(processes):
 # process, arrival time, burst time, completion time, waiting time, turnaround time
 
 processes = [[0, 5, 1], [1, 4, 2], [2, 2, 3], [4, 1, 4]]    # [arrival time, burst time, processID]
-output, gantt_chart, avg_wt, avg_tt = rr(processes=processes)
+quantum = 2
+output, gantt_chart, avg_wt, avg_tt = rr(processes=processes, quantum=quantum)
 
 print("Process ID\t Arrival Time\t Burst Time\t Completion Time\t Waiting Time\t Turnaround Time")
 print('---------------------------------------------------------------------------------------------------------')
@@ -78,6 +77,7 @@ print('-------------------------------------------------------------------------
 for i in range(len(processes)):
     print(f"P{output[i][0]}\t\t {output[i][1]} ms\t\t {output[i][2]} ms\t\t {output[i][3]} ms\t\t\t {output[i][4]} ms\t\t {output[i][5]} ms\n")
 
+print('Time quantum:', quantum)
 print('Average Waiting Time:', avg_wt)
 print('Average Turnaround Time:', avg_tt)
 
